@@ -1,37 +1,37 @@
 <?php
+// test.php - PÁGINA DE BIENVENIDA FINAL
 
-// Establecer un formato de salida claro para leer fácilmente
-header('Content-Type: text/plain; charset=utf-8');
+// Iniciamos la sesión para poder acceder a los datos del usuario.
+session_start();
 
-echo "--- INICIO DEL DIAGNÓSTICO ---\n\n";
-
-// 1. Verificar la ruta actual del archivo
-$directorioActual = __DIR__;
-echo "1. El script se está ejecutando desde la carpeta:\n" . $directorioActual . "\n\n";
-
-// 2. Comprobar si la carpeta 'vendor' existe en este directorio
-$rutaVendor = $directorioActual . '/vendor';
-echo "2. Comprobando la existencia de la carpeta 'vendor' en la ruta:\n" . $rutaVendor . "\n";
-if (file_exists($rutaVendor) && is_dir($rutaVendor)) {
-    echo "   RESULTADO: ¡ÉXITO! La carpeta 'vendor' existe.\n\n";
-} else {
-    echo "   RESULTADO: ¡FALLO! La carpeta 'vendor' NO existe o no es un directorio.\n\n";
+// Comprobamos si los datos del usuario existen en la sesión.
+// Si no, significa que no ha iniciado sesión, y lo mandamos al inicio.
+if (!isset($_SESSION['access_token']) || empty($_SESSION['user_name'])) {
+    header('Location: index.php');
+    exit();
 }
-
-// 3. Comprobar si el archivo 'autoload.php' existe dentro de 'vendor'
-$rutaAutoload = $rutaVendor . '/autoload.php';
-echo "3. Comprobando la existencia del archivo 'autoload.php' en la ruta:\n" . $rutaAutoload . "\n";
-if (file_exists($rutaAutoload) && is_file($rutaAutoload)) {
-    echo "   RESULTADO: ¡ÉXITO! El archivo 'autoload.php' existe.\n\n";
-} else {
-    echo "   RESULTADO: ¡FALLO! El archivo 'autoload.php' NO existe o no es un archivo.\n\n";
-}
-
-// 4. Listar todos los archivos y carpetas en el directorio actual para ver qué hay realmente
-echo "4. Contenido real de la carpeta '" . $directorioActual . "':\n";
-$contenido = scandir($directorioActual);
-print_r($contenido);
-
-echo "\n--- FIN DEL DIAGNÓSTICO ---\n";
-
 ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenido al Proyecto</title>
+    <!-- Le he añadido unos estilos simples para que la captura se vea profesional -->
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .profile-card { padding: 40px; border-radius: 12px; background-color: white; box-shadow: 0 6px 12px rgba(0,0,0,0.1); text-align: center; border: 1px solid #ddd; }
+        img.profile-picture { border-radius: 50%; width: 120px; height: 120px; margin-bottom: 20px; }
+        h1 { font-size: 24px; margin: 0 0 10px 0; }
+        p { font-size: 16px; color: #555; margin: 0; }
+        a.logout-button { display: inline-block; margin-top: 30px; padding: 12px 24px; background-color: #d9534f; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="profile-card">
+        <img class="profile-picture" src="<?php echo htmlspecialchars($_SESSION['user_picture']); ?>" alt="Foto de perfil">
+        <h1>¡Bienvenido, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</h1>
+        <p>Tu correo es: <?php echo htmlspecialchars($_SESSION['user_email']); ?></p>
+        <a class="logout-button" href="logout.php">Cerrar Sesión</a>
+    </div>
+</body>
+</html>

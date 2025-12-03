@@ -1,0 +1,8 @@
+# Ignorar la carpeta de dependencias de Composer
+vendor/
+
+# Ignorar el archivo con las credenciales secretas de Google
+google-api-config.php
+
+# Ignorar cualquier archivo que contenga credenciales hardcodeadas (buena práctica)
+login.php

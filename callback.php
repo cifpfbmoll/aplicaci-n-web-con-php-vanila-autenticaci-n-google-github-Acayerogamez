@@ -1,53 +1,45 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
-session_start();
+// callback.php - VERSIÓN FUNCIONAL
 
-// Configuración del cliente de Google - ¡TUS CREDENCIALES YA ESTÁN AQUÍ!
-$clientID = '469042230703-2hg22trqrokbn5b4qjhbr2iriti0qct8.apps.googleusercontent.com';
-$clientSecret = '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';
-$redirectUri = 'http://localhost/google-auth-php/callback.php';
+// Incluimos la configuración central.
+require_once 'google-api-config.php';
 
-$client = new Google_Client();
-$client->setClientId($clientID);
-$client->setClientSecret($clientSecret);
-$client->setRedirectUri($redirectUri);
-
+// Google nos devuelve un 'code' si el usuario autoriza.
 if (isset($_GET['code'])) {
     try {
-        $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
-        if (isset($token['error'])) {
-            throw new Exception('Error fetching access token: ' . $token['error_description']);
+        // Canjeamos el 'code' por un token de acceso.
+        $token = $google_client->fetchAccessTokenWithAuthCode($_GET['code']);
+        $google_client->setAccessToken($token);
+
+        // Guardamos el token en la sesión PHP.
+        $_SESSION['access_token'] = $token;
+
+        // Pedimos a Google los datos del perfil del usuario.
+        $google_service = new Google_Service_Oauth2($google_client);
+        $data = $google_service->userinfo->get();
+
+        // Guardamos los datos que nos interesan en la sesión.
+        if (!empty($data['name'])) {
+            $_SESSION['user_name'] = $data['name'];
         }
-        $client->setAccessToken($token['access_token']);
+        if (!empty($data['email'])) {
+            $_SESSION['user_email'] = $data['email'];
+        }
+        if (!empty($data['picture'])) {
+            $_SESSION['user_picture'] = $data['picture'];
+        }
 
-        $google_oauth = new Google_Service_Oauth2($client);
-        $google_account_info = $google_oauth->userinfo->get();
-
-        $_SESSION['user_data'] = [
-            'name' => $google_account_info->name,
-            'email' => $google_account_info->email,
-            'picture' => $google_account_info->picture,
-        ];
-
-        header('Location: index.php');
+        // Redirigimos al usuario a la página de bienvenida.
+        header('Location: test.php');
         exit();
 
     } catch (Exception $e) {
-        echo 'Ha ocurrido un error: ' . $e->getMessage();
-        exit();
+        // Si algo falla, muestra un error claro.
+        die('Ha ocurrido un error al contactar con Google: ' . $e->getMessage());
     }
+} else {
+    // Si alguien llega aquí sin un 'code', lo mandamos al inicio.
+    header('Location: index.php');
+    exit();
 }
-
-header('Location: index.php');
-exit();
-?>```
-
-#### **Archivo 4: `logout.php`**
-```php
-<?php
-session_start();
-$_SESSION = array();
-session_destroy();
-header('Location: index.php');
-exit();
 ?>
